@@ -347,8 +347,79 @@ max(salary) over(partition by gender) as high_sal_by_gender
 from admin_users;
 
 -- COMMMON TABLE EXPRESSIONS
+WITH avg_sal AS (
+    SELECT AVG(salary) AS avg_salary
+    FROM users
+)
+SELECT name, salary
+FROM users, avg_sal
+WHERE salary > avg_salary;
+
+WITH salary_groups AS (
+    SELECT name, salary,
+        CASE
+            WHEN salary < 60000 THEN 'Low'
+            WHEN salary BETWEEN 60000 AND 80000 THEN 'Medium'
+            ELSE 'High'
+        END AS salary_level
+    FROM users
+)
+SELECT * FROM salary_groups;
+
+WITH ordered AS (
+    SELECT name, salary,
+           ROW_NUMBER() OVER (ORDER BY salary ASC) AS rn
+    FROM users
+)
+SELECT name, salary
+FROM ordered
+WHERE rn <= 3;
+
+select * from ordered;
+
+-- temp tables
+create temporary table salary_over_55k as
+select * from users
+where salary >= 55000;
+
+select * from salary_over_55k;
+
+CREATE TEMPORARY TABLE temp_highest_gender AS
+SELECT 
+    name, gender, salary,
+    RANK() OVER (PARTITION BY gender ORDER BY salary DESC) AS rnk
+FROM users;
+
+SELECT * FROM temp_highest_gender WHERE rnk = 1;
+
+create temporary table users_sal_category
+select name, salary,
+case
+	when salary <= 45000 then 'low salary'
+    when salary between 50000 and 69000 then 'good salary'
+    when salary >=70000 then 'high salary'
+    end as users_sal_status
+    from users;
+    
+    select * from users_Sal_category;
+    
+    select name, users_sal_Status
+    from users_sal_Category
+    where salary between 45000 and 55000;
+    
+    CREATE TEMPORARY TABLE temp_females AS
+SELECT * 
+FROM users
+WHERE gender = 'Female';
+
+select count(*), avg(salary), max(salary) from temp_females;
+SELECT * FROM temp_females ORDER BY salary DESC;
 
 
+
+drop table users_sal_Category;
+
+-- stored procedures
 
 
 
